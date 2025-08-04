@@ -1,0 +1,397 @@
+{
+  "info": {
+    "name": "RH Platform API",
+    "description": "API complète pour la plateforme de gestion RH",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "http://localhost:5000",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refresh_token",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{access_token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Authentification",
+      "item": [
+        {
+          "name": "Connexion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@rh-platform.com\",\n  \"password\": \"Admin123!\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/auth/login",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    pm.environment.set('access_token', response.access_token);",
+                  "    pm.environment.set('refresh_token', response.refresh_token);",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Rafraîchir Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{refresh_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/api/auth/refresh",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "refresh"]
+            }
+          }
+        },
+        {
+          "name": "Obtenir Profil Utilisateur",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/auth/me",
+              "host": ["{{base_url}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pointage",
+      "item": [
+        {
+          "name": "Effectuer un pointage",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"arrival\",\n  \"location\": \"Bureau principal\",\n  \"device\": \"Web\",\n  \"notes\": \"Pointage via interface web\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/timekeeping/punch",
+              "host": ["{{base_url}}"],
+              "path": ["api", "timekeeping", "punch"]
+            }
+          }
+        },
+        {
+          "name": "Pointages du jour",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/timekeeping/today",
+              "host": ["{{base_url}}"],
+              "path": ["api", "timekeeping", "today"]
+            }
+          }
+        },
+        {
+          "name": "Historique des pointages",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/timekeeping/user/1?page=1&per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "timekeeping", "user", "1"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Résumé mensuel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/timekeeping/summary/1?year=2024&month=1",
+              "host": ["{{base_url}}"],
+              "path": ["api", "timekeeping", "summary", "1"],
+              "query": [
+                {
+                  "key": "year",
+                  "value": "2024"
+                },
+                {
+                  "key": "month",
+                  "value": "1"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Congés",
+      "item": [
+        {
+          "name": "Demander un congé",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"type\": \"annual\",\n  \"start_date\": \"2024-02-01T00:00:00Z\",\n  \"end_date\": \"2024-02-05T00:00:00Z\",\n  \"reason\": \"Congés annuels\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/leaves",
+              "host": ["{{base_url}}"],
+              "path": ["api", "leaves"]
+            }
+          }
+        },
+        {
+          "name": "Liste des congés",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/leaves?page=1&per_page=20",
+              "host": ["{{base_url}}"],
+              "path": ["api", "leaves"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "per_page",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Approuver un congé",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"notes\": \"Congé approuvé\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/leaves/1/approve",
+              "host": ["{{base_url}}"],
+              "path": ["api", "leaves", "1", "approve"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Tableau de bord",
+      "item": [
+        {
+          "name": "Statistiques globales",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/stats",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "stats"]
+            }
+          }
+        },
+        {
+          "name": "Statistiques par département",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/dashboard/departments",
+              "host": ["{{base_url}}"],
+              "path": ["api", "dashboard", "departments"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Employé du mois",
+      "item": [
+        {
+          "name": "Employé du mois actuel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/employee-of-month/current",
+              "host": ["{{base_url}}"],
+              "path": ["api", "employee-of-month", "current"]
+            }
+          }
+        },
+        {
+          "name": "Historique des employés du mois",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/employee-of-month/history",
+              "host": ["{{base_url}}"],
+              "path": ["api", "employee-of-month", "history"]
+            }
+          }
+        },
+        {
+          "name": "Nommer un employé du mois",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"employee_id\": 1,\n  \"year\": 2024,\n  \"month\": 1,\n  \"attendance_rate\": 95.5,\n  \"punctuality_score\": 92.0,\n  \"performance_score\": 88.0,\n  \"teamwork_score\": 90.0,\n  \"initiative_score\": 85.0,\n  \"nomination_reason\": \"Excellent travail et implication\"\n}"
+            },
+            "url": {
+              "raw": "{{base_url}}/api/employee-of-month",
+              "host": ["{{base_url}}"],
+              "path": ["api", "employee-of-month"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Rapports",
+      "item": [
+        {
+          "name": "Rapport des heures supplémentaires",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reports/overtime?department_id=1&start_date=2024-01-01&end_date=2024-01-31",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reports", "overtime"],
+              "query": [
+                {
+                  "key": "department_id",
+                  "value": "1"
+                },
+                {
+                  "key": "start_date",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-01-31"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Rapport des retards",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/api/reports/late?department_id=1&start_date=2024-01-01&end_date=2024-01-31",
+              "host": ["{{base_url}}"],
+              "path": ["api", "reports", "late"],
+              "query": [
+                {
+                  "key": "department_id",
+                  "value": "1"
+                },
+                {
+                  "key": "start_date",
+                  "value": "2024-01-01"
+                },
+                {
+                  "key": "end_date",
+                  "value": "2024-01-31"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
