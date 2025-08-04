@@ -1,0 +1,311 @@
+{% extends "base.html" %}
+
+{% block title %}Tableau de bord - RH Platform{% endblock %}
+
+{% block content %}
+<!-- En-tête du tableau de bord -->
+<div class="dashboard-stats">
+    <div class="row">
+        <div class="col-md-8">
+            <h2>Bonjour, {{ user.first_name }} !</h2>
+            <p class="mb-0">Bienvenue sur votre tableau de bord RH</p>
+        </div>
+        <div class="col-md-4 text-md-end">
+            <p class="mb-0">
+                <i class="bi bi-calendar3"></i> 
+                {{ moment().format('dddd DD MMMM YYYY') }}
+            </p>
+        </div>
+    </div>
+</div>
+
+<!-- Statistiques rapides -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon text-primary">
+                <i class="bi bi-clock"></i>
+            </div>
+            <div class="stat-value" data-stat="work_days">{{ stats.total_work_days or 0 }}</div>
+            <div class="stat-label">Jours travaillés</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon text-warning">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div class="stat-value" data-stat="overtime_hours">{{ stats.total_overtime_hours or 0 }}</div>
+            <div class="stat-label">Heures supplémentaires</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon text-success">
+                <i class="bi bi-calendar-check"></i>
+            </div>
+            <div class="stat-value" data-stat="approved_leaves">{{ stats.approved_leaves or 0 }}</div>
+            <div class="stat-label">Congés approuvés</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="stat-card">
+            <div class="stat-icon text-info">
+                <i class="bi bi-graph-up"></i>
+            </div>
+            <div class="stat-value" data-stat="attendance_rate">{{ "%.1f"|format(stats.attendance_rate or 0) }}%</div>
+            <div class="stat-label">Taux de présence</div>
+        </div>
+    </div>
+</div>
+
+<!-- Pointage du jour -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card timekeeping-card">
+            <div class="card-header">
+                <h5><i class="bi bi-clock"></i> Pointage du jour</h5>
+            </div>
+            <div class="card-body text-center">
+                <div class="row mb-3">
+                    <div class="col-6">
+                        <button class="btn punch-button punch-in" data-type="arrival">
+                            <i class="bi bi-box-arrow-in-right"></i><br>
+                            Arrivée
+                        </button>
+                    </div>
+                    <div class="col-6">
+                        <button class="btn punch-button punch-out" data-type="departure">
+                            <i class="bi bi-box-arrow-left"></i><br>
+                            Départ
+                        </button>
+                    </div>
+                </div>
+                
+                {% if today_records %}
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Heure</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for record in today_records %}
+                            <tr>
+                                <td>
+                                    {% if record.type == 'arrival' %}
+                                        <i class="bi bi-box-arrow-in-right text-success"></i> Arrivée
+                                    {% elif record.type == 'departure' %}
+                                        <i class="bi bi-box-arrow-left text-danger"></i> Départ
+                                    {% else %}
+                                        {{ record.type }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ record.time.strftime('%H:%M') }}</td>
+                                <td>
+                                    {% if record.is_late %}
+                                        <span class="badge bg-warning">En retard</span>
+                                    {% else %}
+                                        <span class="badge bg-success">À l'heure</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <p class="text-muted">Aucun pointage aujourd'hui</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Employé du mois -->
+    <div class="col-md-6">
+        {% if current_employee %}
+        <div class="card employee-of-month-card">
+            <div class="card-body text-center">
+                <div class="employee-avatar">
+                    <i class="bi bi-trophy"></i>
+                </div>
+                <h5>Employé du mois</h5>
+                <h4>{{ current_employee.employee.full_name }}</h4>
+                <p class="mb-2">{{ current_employee.employee.position }}</p>
+                <p class="mb-3">{{ current_employee.period_label }}</p>
+                <div class="row text-center">
+                    <div class="col-4">
+                        <small>Présence</small><br>
+                        <strong>{{ "%.1f"|format(current_employee.attendance_rate) }}%</strong>
+                    </div>
+                    <div class="col-4">
+                        <small>Ponctualité</small><br>
+                        <strong>{{ "%.1f"|format(current_employee.punctuality_score) }}%</strong>
+                    </div>
+                    <div class="col-4">
+                        <small>Performance</small><br>
+                        <strong>{{ "%.1f"|format(current_employee.performance_score) }}%</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-trophy text-muted" style="font-size: 3rem;"></i>
+                <h5 class="mt-3">Employé du mois</h5>
+                <p class="text-muted">Aucun employé sélectionné pour ce mois</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Graphiques -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-graph-up"></i> Taux de présence hebdomadaire</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="attendanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-hourglass-split"></i> Heures supplémentaires</h5>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="overtimeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Congés en cours -->
+{% if current_leaves %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-calendar-check"></i> Congés en cours</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Début</th>
+                                <th>Fin</th>
+                                <th>Durée</th>
+                                <th>Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for leave in current_leaves %}
+                            <tr>
+                                <td>
+                                    {% if leave.type == 'annual' %}
+                                        <i class="bi bi-calendar-event text-primary"></i> Congés payés
+                                    {% elif leave.type == 'sick' %}
+                                        <i class="bi bi-heart-pulse text-danger"></i> Congés maladie
+                                    {% else %}
+                                        <i class="bi bi-calendar text-secondary"></i> {{ leave.type }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ leave.start_date.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ leave.end_date.strftime('%d/%m/%Y') }}</td>
+                                <td>{{ leave.working_days }} jours</td>
+                                <td>
+                                    <span class="leave-status approved">Approuvé</span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Actions rapides -->
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-calendar-plus text-primary" style="font-size: 2rem;"></i>
+                <h6 class="mt-2">Demander un congé</h6>
+                <a href="{{ url_for('web.leaves') }}" class="btn btn-outline-primary btn-sm">
+                    Nouvelle demande
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-graph-up text-success" style="font-size: 2rem;"></i>
+                <h6 class="mt-2">Voir mes rapports</h6>
+                <a href="{{ url_for('web.reports') }}" class="btn btn-outline-success btn-sm">
+                    Consulter
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="bi bi-person-circle text-info" style="font-size: 2rem;"></i>
+                <h6 class="mt-2">Mon profil</h6>
+                <a href="{{ url_for('web.profile') }}" class="btn btn-outline-info btn-sm">
+                    Modifier
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Mise à jour en temps réel du dashboard
+document.addEventListener('DOMContentLoaded', function() {
+    // Démarrer les mises à jour en temps réel
+    if (window.rhPlatform) {
+        window.rhPlatform.startRealTimeUpdates();
+    }
+    
+    // Actualiser les données toutes les 30 secondes
+    setInterval(function() {
+        fetch('/api/dashboard/stats')
+            .then(response => response.json())
+            .then(data => {
+                // Mettre à jour les statistiques
+                document.querySelectorAll('[data-stat]').forEach(element => {
+                    const statName = element.dataset.stat;
+                    if (data[statName] !== undefined) {
+                        element.textContent = data[statName];
+                    }
+                });
+            })
+            .catch(error => console.error('Erreur mise à jour stats:', error));
+    }, 30000);
+});
+</script>
+{% endblock %}
