@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Connexion - RH Platform{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6 col-lg-4">
+        <div class="card shadow-lg">
+            <div class="card-header text-center">
+                <h4><i class="bi bi-people-fill"></i> RH Platform</h4>
+                <p class="mb-0">Connexion à votre espace</p>
+            </div>
+            <div class="card-body p-4">
+                <form id="loginForm" method="POST">
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-envelope"></i>
+                            </span>
+                            <input type="email" class="form-control" id="email" name="email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Mot de passe</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-lock"></i>
+                            </span>
+                            <input type="password" class="form-control" id="password" name="password" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="remember">
+                        <label class="form-check-label" for="remember">
+                            Se souvenir de moi
+                        </label>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="bi bi-box-arrow-in-right"></i> Se connecter
+                        </button>
+                    </div>
+                </form>
+                
+                <hr class="my-4">
+                
+                <div class="text-center">
+                    <a href="#" class="text-decoration-none">Mot de passe oublié ?</a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Informations de connexion pour les tests -->
+        <div class="card mt-3">
+            <div class="card-body">
+                <h6 class="card-title">Compte de test</h6>
+                <p class="card-text small">
+                    <strong>Email:</strong> admin@rh-platform.com<br>
+                    <strong>Mot de passe:</strong> Admin123!
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus sur le champ email
+    document.getElementById('email').focus();
+    
+    // Validation en temps réel
+    const form = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    
+    function validateForm() {
+        const email = emailInput.value.trim();
+        const password = passwordInput.value;
+        
+        const emailValid = email.includes('@') && email.includes('.');
+        const passwordValid = password.length >= 6;
+        
+        // Mise à jour visuelle
+        emailInput.classList.toggle('is-valid', emailValid && email.length > 0);
+        emailInput.classList.toggle('is-invalid', !emailValid && email.length > 0);
+        
+        passwordInput.classList.toggle('is-valid', passwordValid && password.length > 0);
+        passwordInput.classList.toggle('is-invalid', !passwordValid && password.length > 0);
+        
+        return emailValid && passwordValid;
+    }
+    
+    emailInput.addEventListener('input', validateForm);
+    passwordInput.addEventListener('input', validateForm);
+    
+    form.addEventListener('submit', function(e) {
+        if (!validateForm()) {
+            e.preventDefault();
+            return false;
+        }
+    });
+});
+</script>
+{% endblock %}
